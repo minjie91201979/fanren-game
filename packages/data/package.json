@@ -1,0 +1,16 @@
+{
+  "name": "@fanren/data",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@fanren/core": "workspace:*",
+    "zustand": "^4.5.0",
+    "immer": "^10.0.0",
+    "mitt": "^3.0.1"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  }
+}

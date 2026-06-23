@@ -1,0 +1,184 @@
+/* ========================================
+   精灵图 / 物品图 / 技能图 切片样式
+   所有路径使用根相对路径（Vite publicDir = fanren-game/assets/）
+   ======================================== */
+
+/* ---- 基础精灵容器 ---- */
+.sprite-bg {
+  background-repeat: no-repeat;
+  image-rendering: auto;
+  flex-shrink: 0;
+}
+
+/* ---- 玩家精灵 spr_player_male.png (单图 1024x1024) ---- */
+.sprite-player {
+  width: 96px;
+  height: 128px;
+  background-image: url('/sprites/spr_player_male.png');
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ---- 敌人精灵 spr_enemies.png (2x2 grid 1024x1024) ---- */
+.sprite-enemy {
+  width: 96px;
+  height: 96px;
+  background-image: url('/sprites/spr_enemies.png');
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+}
+.sprite-enemy-ghost   { background-position: 0% 0%; }    /* 左上 - 鬼灵 */
+.sprite-enemy-golem  { background-position: 100% 0%; }   /* 右上 - 石傀儡 */
+.sprite-enemy-wolf    { background-position: 0% 100%; }   /* 左下 - 妖狼 */
+.sprite-enemy-serpent { background-position: 100% 100%; }  /* 右下 - 水蛇 */
+
+/* ---- Boss精灵 spr_bosses.png (2x2 grid) ---- */
+.sprite-boss {
+  width: 128px;
+  height: 128px;
+  background-image: url('/sprites/spr_bosses.png');
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+}
+.sprite-boss-wolf    { background-position: 0% 0%; }
+.sprite-boss-qilin   { background-position: 100% 0%; }
+.sprite-boss-serpent { background-position: 0% 100%; }
+.sprite-boss-golem   { background-position: 100% 100%; }
+
+/* ---- NPC精灵 spr_npcs.png (2x2 grid) ---- */
+.sprite-npc {
+  width: 56px;
+  height: 56px;
+  background-image: url('/sprites/spr_npcs.png');
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  border: 2px solid var(--border-default);
+  background-color: var(--bg-elevated);
+}
+.sprite-npc-elder   { background-position: 0% 0%; }    /* 柳云鹤 */
+.sprite-npc-female  { background-position: 100% 0%; }   /* 林婉儿 */
+.sprite-npc-merchant { background-position: 0% 100%; }  /* 商贩 */
+.sprite-npc-smith   { background-position: 100% 100%; }  /* 铁匠 */
+
+/* ---- 丹药材料图 items_cultivation.png (4x2 grid) ---- */
+.sprite-item-cult {
+  width: 48px;
+  height: 48px;
+  background-image: url('/items/items_cultivation.png');
+  background-size: 400% 200%;
+  background-repeat: no-repeat;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-elevated);
+}
+.sprite-item-spiritstone { background-position: 0% 0%; }
+.sprite-item-hp-pill     { background-position: 33.33% 0%; }
+.sprite-item-mp-pill     { background-position: 66.66% 0%; }
+.sprite-item-herb        { background-position: 100% 0%; }
+.sprite-item-jadeslip    { background-position: 0% 100%; }
+.sprite-item-talisman    { background-position: 33.33% 100%; }
+.sprite-item-cauldron   { background-position: 66.66% 100%; }
+.sprite-item-beastcore   { background-position: 100% 100%; }
+
+/* ---- 武器装备图 items_equipment.png (4x2 grid) ---- */
+.sprite-item-equip {
+  width: 48px;
+  height: 48px;
+  background-image: url('/items/items_equipment.png');
+  background-size: 400% 200%;
+  background-repeat: no-repeat;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-elevated);
+}
+.sprite-item-sword  { background-position: 0% 0%; }
+.sprite-item-blade  { background-position: 33.33% 0%; }
+.sprite-item-staff  { background-position: 66.66% 0%; }
+.sprite-item-fan    { background-position: 100% 0%; }
+.sprite-item-robe   { background-position: 0% 100%; }
+.sprite-item-armor { background-position: 33.33% 100%; }
+.sprite-item-crown  { background-position: 66.66% 100%; }
+.sprite-item-boots  { background-position: 100% 100%; }
+
+/* ---- 技能图标 skills_icons.png (5x2 grid) ---- */
+.sprite-skill {
+  width: 40px;
+  height: 40px;
+  background-image: url('/skills/skills_icons.png');
+  background-size: 500% 200%;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+}
+.sprite-skill-metal    { background-position: 0% 0%; }
+.sprite-skill-wood     { background-position: 25% 0%; }
+.sprite-skill-water    { background-position: 50% 0%; }
+.sprite-skill-fire     { background-position: 75% 0%; }
+.sprite-skill-earth    { background-position: 100% 0%; }
+.sprite-skill-lightning { background-position: 0% 100%; }
+.sprite-skill-ice      { background-position: 25% 100%; }
+.sprite-skill-wind     { background-position: 50% 100%; }
+.sprite-skill-dark     { background-position: 75% 100%; }
+.sprite-skill-heal     { background-position: 100% 100%; }
+
+/* ---- 战斗中玩家/敌人展示尺寸 ---- */
+.sprite-player-combat {
+  width: 120px;
+  height: 160px;
+  background-image: url('/sprites/spr_player_male.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  image-rendering: auto;
+}
+
+.sprite-enemy-combat {
+  width: 120px;
+  height: 120px;
+  background-image: url('/sprites/spr_enemies.png');
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  background-position: 0% 100%; /* 默认妖狼 */
+}
+
+/* ---- 各页面背景图 ---- */
+.bg-main-menu      { background-image: url('/backgrounds/bg_main_menu.png'); }
+.bg-cave           { background-image: url('/backgrounds/bg_cave_dwelling.png'); }
+.bg-combat-forest  { background-image: url('/backgrounds/bg_combat_forest.png'); }
+.bg-combat-ruins  { background-image: url('/backgrounds/bg_combat_ruins.png'); }
+.bg-dungeon        { background-image: url('/backgrounds/bg_dungeon_cave.png'); }
+.bg-huangfeng     { background-image: url('/backgrounds/bg_huangfeng_valley.png'); }
+.bg-sect-hall     { background-image: url('/backgrounds/bg_sect_hall.png'); }
+.bg-market         { background-image: url('/backgrounds/bg_market.png'); }
+.bg-village       { background-image: url('/backgrounds/bg_village.png'); }
+.bg-breakthrough  { background-image: url('/backgrounds/bg_breakthrough.png'); }
+.bg-loading       { background-image: url('/backgrounds/bg_loading.png'); }
+
+/* 背景通用覆层 */
+.bg-overlay {
+  position: relative;
+}
+.bg-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(245, 243, 237, 0.05) 0%,
+    rgba(245, 243, 237, 0.55) 50%,
+    rgba(245, 243, 237, 0.92) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-overlay > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 背景图通用容器 */
+.bg-cover {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

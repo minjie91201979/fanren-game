@@ -1,0 +1,1 @@
+export { EnemyFactory } from './EnemyFactory';

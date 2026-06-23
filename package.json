@@ -1,0 +1,10 @@
+{
+  "name": "fanren-game",
+  "version": "0.1.0",
+  "private": true,
+  "description": "凡人修仙传 - 水墨粒子风格修仙单机游戏",
+  "scripts": {
+    "dev": "cd packages/app && npm run dev",
+    "build": "cd packages/app && npm run build"
+  }
+}
