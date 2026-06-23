@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { CombatUnit, Buff, CombatAction, Attributes, SkillEffect } from '@/core';
 import { calculateDamage, generateId } from '@/core';
+import { usePlayerStore } from './playerStore';
 
 interface SkillCooldown {
   skillId: string;
@@ -23,6 +24,13 @@ interface CombatState {
   endCombat: () => void;
   addLog: (msg: string) => void;
   isOnCooldown: (skillId: string) => boolean;
+}
+
+// 胜利时发放奖励到 playerStore
+function grantRewards(gold: number, cultivation: number) {
+  const ps = usePlayerStore.getState();
+  ps.modifyGold(gold);
+  ps.addCultivation(cultivation);
 }
 
 export const useCombatStore = create<CombatState>()(
@@ -99,6 +107,7 @@ export const useCombatStore = create<CombatState>()(
             s.isActive = false;
             s.result = { victory: true, rewards: { gold: 80, cultivation: 50 } };
             s.log.push(`🎉 击败了 ${s.enemy.name}！`);
+            grantRewards(80, 50);
             return;
           }
 
@@ -148,6 +157,7 @@ export const useCombatStore = create<CombatState>()(
           s.isActive = false;
           s.result = { victory: true, rewards: { gold: 50, cultivation: 30 } };
           s.log.push(`🎉 击败了 ${s.enemy.name}！`);
+          grantRewards(50, 30);
           return;
         }
 

@@ -14,6 +14,14 @@ export const Combat: React.FC = () => {
   });
   const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // 检测是否有已激活的战斗（从地图直接进入时）
+  useEffect(() => {
+    if (combat.isActive) {
+      setStarted(true);
+      if (combat.enemy?.sprite) setEnemySprite(combat.enemy.sprite);
+    }
+  }, []);
+
   // 自动战斗状态变更时写入 localStorage
   useEffect(() => {
     try { localStorage.setItem('autoBattle', String(autoBattle)); } catch {}
@@ -66,11 +74,6 @@ export const Combat: React.FC = () => {
       if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
     };
   }, [autoBattle, combat.isActive, combat.turn, combat.turnCount, combat.cooldowns]);
-
-  // ====== 战斗结束时自动关闭自动战斗 ======
-  useEffect(() => {
-    if (!combat.isActive && autoBattle) setAutoBattle(false);
-  }, [combat.isActive]);
 
   // ====== 清理 ======
   useEffect(() => {
@@ -129,13 +132,11 @@ export const Combat: React.FC = () => {
     };
 
     setEnemySprite(data.sprite);
-    setAutoBattle(false);
     combat.startCombat(playerUnit, enemyUnit);
     setStarted(true);
   };
 
   const handleBack = () => {
-    setAutoBattle(false);
     combat.endCombat();
     setStarted(false);
     window.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'cave' } }));
