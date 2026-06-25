@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePlayerStore } from '@/data';
-import { getSaveSlots, loadGameToStore, deleteSave, formatSaveTime, SaveSlotInfo } from '@/data';
+import { getSaveSlots, loadGameToStore, deleteSave, formatSaveTime, importSave, SaveSlotInfo } from '@/data';
 import { REALM_NAMES } from '@/core';
 
 export const MainMenu: React.FC = () => {
@@ -8,6 +8,7 @@ export const MainMenu: React.FC = () => {
   const [saveSlots, setSaveSlots] = useState<SaveSlotInfo[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const setPlayer = usePlayerStore((s) => s.setPlayer);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 刷新存档列表
   const refreshSlots = () => {
@@ -33,6 +34,39 @@ export const MainMenu: React.FC = () => {
     deleteSave(slot);
     refreshSlots();
     setDeleteConfirm(null);
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const result = importSave(text);
+      if (result.ok) {
+        window.dispatchEvent(new CustomEvent('notification', {
+          detail: {
+            type: 'success',
+            message: `导入成功！欢迎回来，${result.name}`,
+          },
+        }));
+        refreshSlots();
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'cave' } }));
+        }, 500);
+      } else {
+        window.dispatchEvent(new CustomEvent('notification', {
+          detail: { type: 'error', message: result.error || '导入失败' },
+        }));
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   return (
@@ -82,7 +116,20 @@ export const MainMenu: React.FC = () => {
           <button className="btn btn-sm" style={{ opacity: 0.5, width: '100%' }}>
             设定
           </button>
+          <button className="btn btn-sm" onClick={handleImportClick} style={{ width: '100%', opacity: 0.6, fontSize: 13 }}
+            title="从文件导入存档">
+            📥 导入存档
+          </button>
         </div>
+
+        {/* 隐藏的文件选择器 */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          style={{ display: 'none' }}
+          onChange={handleImportFile}
+        />
 
         {/* Load slots - 账号选择 */}
         {showLoad && (

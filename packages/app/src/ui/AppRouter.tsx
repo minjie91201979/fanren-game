@@ -10,10 +10,14 @@ import { Sect } from './pages/Sect/Sect';
 import { Trading } from './pages/Trading/Trading';
 import { SecretRealm } from './pages/SecretRealm/SecretRealm';
 import { SkillTree } from './pages/SkillTree/SkillTree';
+import { Guide } from './pages/Guide/Guide';
+import { AlchemyRoom } from './pages/AlchemyRoom/AlchemyRoom';
+import { ForgingRoom } from './pages/ForgingRoom/ForgingRoom';
+import { Garden } from './pages/Garden/Garden';
 import { usePlayerStore } from '@/data';
 import { startAutoSave, stopAutoSave, getCurrentSlot } from '@/data';
 
-type PageName = 'menu' | 'character-create' | 'cave' | 'combat' | 'world-map' | 'inventory' | 'breakthrough' | 'sect' | 'trading' | 'secret-realm' | 'skill-tree';
+type PageName = 'menu' | 'character-create' | 'cave' | 'combat' | 'world-map' | 'inventory' | 'breakthrough' | 'sect' | 'trading' | 'secret-realm' | 'skill-tree' | 'guide' | 'alchemy-room' | 'forging-room' | 'garden';
 
 interface Toast {
   id: number;
@@ -81,6 +85,10 @@ export const AppRouter: React.FC = () => {
       case 'trading': return <Trading />;
       case 'secret-realm': return <SecretRealm />;
       case 'skill-tree': return <SkillTree />;
+      case 'guide': return <Guide />;
+      case 'alchemy-room': return <AlchemyRoom />;
+      case 'forging-room': return <ForgingRoom />;
+      case 'garden': return <Garden />;
       default: return <MainMenu />;
     }
   };

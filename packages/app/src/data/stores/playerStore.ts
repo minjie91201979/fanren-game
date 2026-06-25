@@ -29,6 +29,7 @@ interface PlayerState {
   learnSkill: (skillId: string) => boolean;
   upgradeSkill: (skillId: string) => { success: boolean; cost: number };
   getEffectiveAttributes: () => import('@/core').Attributes;
+  getCultivationBonus: () => number;
 }
 
 function createDefaultPlayer(name: string, gender: 'MALE' | 'FEMALE'): PlayerData {
@@ -312,7 +313,26 @@ export const usePlayerStore = create<PlayerState>()(
         }
       }
 
+      // 功法加成（已学功法属性叠加）
+      for (const tech of state.player.techniques as any[]) {
+        if (!tech.attributeBonus) continue;
+        for (const [k, v] of Object.entries(tech.attributeBonus)) {
+          (base as any)[k] = ((base as any)[k] || 0) + (v as number);
+        }
+      }
+
       return base;
+    },
+
+    /** 获取所有已学功法的修炼速度总加成 */
+    getCultivationBonus: () => {
+      const state = get();
+      if (!state.player) return 0;
+      let bonus = 0;
+      for (const tech of state.player.techniques as any[]) {
+        bonus += tech.cultivationBonus || 0;
+      }
+      return bonus;
     },
   }))
 );

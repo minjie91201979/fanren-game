@@ -2,6 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { usePlayerStore } from '@/data';
 import { ITEM_DB, getItem } from '@/data';
 
+/** 发送浮动 Toast */
+const toast = (message: string, type: 'success' | 'error' = 'success') => {
+  window.dispatchEvent(new CustomEvent('notification', { detail: { message, type } }));
+};
+
 // ==================== 工具函数 ====================
 
 /** 游戏时间 → 总小时数（用于计算任务进度） */
@@ -197,15 +202,15 @@ export const Sect: React.FC = () => {
     const tech = LIBRARY_TECHNIQUES.find((t) => t.id === techId);
     if (!tech) return;
     if (tech.costType === 'contribution') {
-      if (contribution < tech.cost) return alert(`宗门贡献不足！需要 ${tech.cost} 点`);
+      if (contribution < tech.cost) { toast(`宗门贡献不足！需要 ${tech.cost} 点`, 'error'); return; }
       addContribution(-tech.cost);
     } else if (tech.costType === 'gold') {
-      if (player.gold < tech.cost) return alert(`灵石不足！需要 ${tech.cost} 灵石`);
+      if (player.gold < tech.cost) { toast(`灵石不足！需要 ${tech.cost} 灵石`, 'error'); return; }
       modifyGold(-tech.cost);
     }
     const item = getItem(tech.id);
     if (item) addItem(item, 1);
-    alert(`成功获得《${item?.name}》！已放入背包`);
+    toast(`成功获得《${item?.name}》！已放入背包`);
     setModal('none');
   };
 
@@ -236,7 +241,7 @@ export const Sect: React.FC = () => {
 
   // ====== 丹药堂：领取月供 ======
   const claimMonthlyPills = () => {
-    if (claimedMonth) return alert('本月已经领过了！');
+    if (claimedMonth) { toast('本月已经领过了！', 'error'); return; }
     MONTHLY_PILLS.forEach(({ itemId, quantity }) => {
       const item = getItem(itemId);
       if (item) addItem(item, quantity);
@@ -271,7 +276,7 @@ export const Sect: React.FC = () => {
 
   // ====== 任务堂：接取 ======
   const acceptMission = (missionId: string) => {
-    if (activeMissionId) return alert('当前已有进行中的任务！');
+    if (activeMissionId) { toast('当前已有进行中的任务！', 'error'); return; }
     // 保存任务ID + 当前游戏时间
     setActiveMissionId(missionId);
     const startJson = JSON.stringify(player.gameTime);

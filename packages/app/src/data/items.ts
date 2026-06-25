@@ -74,6 +74,21 @@ export const ITEM_DB: Record<string, Item> = {
     type: ItemType.MATERIAL, rarity: Rarity.COMMON, level: 1,
     price: 25, stackable: true, quantity: 1,
   },
+  herb_lingzhi: {
+    id: 'herb_lingzhi', name: '灵芝', description: '珍贵药材，可炼制中品丹药',
+    type: ItemType.MATERIAL, rarity: Rarity.UNCOMMON, level: 1,
+    price: 80, stackable: true, quantity: 1,
+  },
+  seed_spirit: {
+    id: 'seed_spirit', name: '灵草种子', description: '可用于在灵药园种植灵草',
+    type: ItemType.MATERIAL, rarity: Rarity.COMMON, level: 1,
+    price: 15, stackable: true, quantity: 1,
+  },
+  seed_lingzhi: {
+    id: 'seed_lingzhi', name: '灵芝孢子', description: '可用于在灵药园种植灵芝',
+    type: ItemType.MATERIAL, rarity: Rarity.UNCOMMON, level: 1,
+    price: 50, stackable: true, quantity: 1,
+  },
   beast_core: {
     id: 'beast_core', name: '妖兽核', description: '低阶妖兽的兽核，可用于炼器',
     type: ItemType.MATERIAL, rarity: Rarity.UNCOMMON, level: 1,
@@ -90,11 +105,17 @@ export const ITEM_DB: Record<string, Item> = {
     id: 'skill_changchun', name: '长春功残篇', description: '人级木系基础功法，修炼速度+10%',
     type: ItemType.SKILL_BOOK, rarity: Rarity.UNCOMMON, level: 1,
     price: 100,
+    // 功法属性加成（已学后生效）
+    attributeBonus: { hp: 10, spirit: 2 },
+    cultivationBonus: 0.1, // 修炼速度+10%
   },
   skill_mingguang: {
     id: 'skill_mingguang', name: '明光诀', description: '人级金系基础功法，攻击+3',
     type: ItemType.SKILL_BOOK, rarity: Rarity.UNCOMMON, level: 1,
     price: 100,
+    // 功法属性加成（已学后生效）
+    attributeBonus: { attack: 3, defense: 1 },
+    cultivationBonus: 0.05, // 修炼速度+5%
   },
 };
 
@@ -108,6 +129,7 @@ export const SHOP_CATALOG = [
   { id: 'sword_iron',       category: '武器' },
   { id: 'robe_cloth',       category: '防具' },
   { id: 'herb_spirit',      category: '材料' },
+  { id: 'seed_spirit',      category: '材料' },
   { id: 'skill_changchun',  category: '功法' },
 ];
 
@@ -115,7 +137,7 @@ export const SHOP_CATALOG = [
 export const DROP_TABLE: Record<string, string[]> = {
   wolf_valley: ['pill_hp_small', 'herb_spirit', 'beast_core'],
   mine:        ['pill_hp_small', 'spirit_stone_low', 'sword_iron'],
-  ruins:       ['pill_mp_small', 'talisman_fire', 'skill_changchun'],
+  ruins:       ['pill_mp_small', 'talisman_fire', 'seed_spirit', 'herb_lingzhi'],
   default:     ['pill_hp_small', 'herb_spirit'],
 };
 

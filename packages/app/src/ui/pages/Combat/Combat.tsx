@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useCombatStore, usePlayerStore } from '@/data';
 import { CombatAction } from '@/core';
 import { getSkill, SKILL_DB } from '@/data/skills';
+import { getMonster, getAvailableMonsters, getTierLabel, MonsterTier } from '@/data/monsters';
 
 export const Combat: React.FC = () => {
   const combat = useCombatStore();
@@ -95,14 +96,9 @@ export const Combat: React.FC = () => {
   const handleStartCombat = (enemyType?: string) => {
     if (!player) return;
 
-    const enemyData: Record<string, { name: string; attrs: any; sprite: string }> = {
-      wolf:   { name: '银鬃狼',   attrs: { hp:200,maxHp:200,mp:0,maxMp:0,attack:20,defense:10,speed:12,spirit:3,critRate:0.05,critDamage:1.5 }, sprite:'sprite-enemy-wolf' },
-      ghost:  { name: '幽灵鬼灵',  attrs: { hp:150,maxHp:150,mp:40,maxMp:40,attack:15,defense:5,speed:18,spirit:5,critRate:0.1,critDamage:1.8 },  sprite:'sprite-enemy-ghost' },
-      golem:  { name: '石傀儡',   attrs: { hp:350,maxHp:350,mp:0,maxMp:0,attack:25,defense:20,speed:6,spirit:2,critRate:0.02,critDamage:1.3 }, sprite:'sprite-enemy-golem' },
-      serpent:{ name: '水蛇妖',   attrs: { hp:180,maxHp:180,mp:30,maxMp:30,attack:18,defense:8,speed:15,spirit:4,critRate:0.08,critDamage:1.6 },  sprite:'sprite-enemy-serpent' },
-    };
-
-    const data = enemyData[enemyType || 'wolf'];
+    const type = enemyType || 'wolf';
+    const m = getMonster(type);
+    if (!m) return;
 
     // 使用有效属性（基础+装备+功法加成）
     const effAttrs = getEffectiveAttributes();
@@ -120,18 +116,18 @@ export const Combat: React.FC = () => {
     };
 
     const enemyUnit = {
-      id: `enemy_${enemyType || 'wolf'}`,
-      name: data.name,
+      id: `enemy_${type}`,
+      name: m.name,
       isPlayer: false,
-      attributes: { ...data.attrs },
-      currentAttributes: { ...data.attrs },
+      attributes: { ...m.attributes },
+      currentAttributes: { ...m.attributes },
       buffs: [],
       skills: [],
-      sprite: data.sprite,
+      sprite: m.sprite,
       realm: player.realm,
     };
 
-    setEnemySprite(data.sprite);
+    setEnemySprite(m.sprite);
     combat.startCombat(playerUnit, enemyUnit);
     setStarted(true);
   };
@@ -168,13 +164,23 @@ export const Combat: React.FC = () => {
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 8, textAlign: 'left' }}>选择对手</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {[{key:'wolf',label:'狼谷·简单'},{key:'ghost',label:'幽林·普通'},{key:'golem',label:'矿洞·困难'},{key:'serpent',label:'水畔·普通'}].map(({key,label})=>(
-                  <button key={key} className="btn btn-sm" onClick={()=>handleStartCombat(key)}
-                    style={{padding:12,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-                    <div className="sprite-bg sprite-enemy" style={{width:48,height:48,backgroundPosition:
-                      key==='wolf'?'0% 100%':key==='ghost'?'0% 0%':key==='golem'?'100% 0%':'100% 100%'
-                    }}/>
-                    <span>{label}</span>
+                {getAvailableMonsters().map((m) => (
+                  <button key={m.type} className="btn btn-sm" onClick={() => handleStartCombat(m.type)}
+                    style={{
+                      padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                      gap: 4, position: 'relative',
+                    }}>
+                    <div className={`sprite-bg sprite-enemy ${m.sprite}`}
+                      style={{ width: 48, height: 48 }}
+                    />
+                    <span>{m.name}</span>
+                    <span style={{
+                      fontSize: 10, color: m.tier === MonsterTier.HIGH ? 'var(--brand-danger)' :
+                        m.tier === MonsterTier.LOW ? 'var(--color-green)' : 'var(--color-gold)',
+                      background: 'rgba(0,0,0,0.3)', padding: '1px 6px', borderRadius: 4,
+                    }}>
+                      {getTierLabel(m.tier)} · 💰{m.baseGold}~{Math.floor(m.baseGold * m.skillMultiplier)}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -322,9 +328,20 @@ export const Combat: React.FC = () => {
               {combat.result.victory?'你击败了敌人，获得了宝贵的战斗经验和战利品。':'被击败了，回到洞府休养吧。'}
             </p>
             {combat.result.victory && combat.result.rewards && (
-              <div style={{ marginBottom:20,display:'flex',justifyContent:'center',gap:16 }}>
-                <span style={{ color:'var(--color-gold)',fontWeight:600,fontSize:15 }}>💰 +{((combat.result.rewards as any).gold||50)} 灵石</span>
-                <span style={{ color:'var(--color-green)',fontWeight:600,fontSize:15 }}>⚡ +{((combat.result.rewards as any).cultivation||30)} 修为</span>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 8 }}>
+                  <span style={{ color: 'var(--color-gold)', fontWeight: 600, fontSize: 15 }}>💰 +{((combat.result.rewards as any).gold || 0)} 灵石</span>
+                  <span style={{ color: 'var(--color-green)', fontWeight: 600, fontSize: 15 }}>⚡ +{((combat.result.rewards as any).cultivation || 0)} 修为</span>
+                </div>
+                {(combat.result.rewards as any).itemDrop && (
+                  <div style={{
+                    fontSize: 13, color: 'var(--brand-primary)', fontWeight: 600,
+                    padding: '6px 12px', background: 'rgba(91,140,90,0.15)',
+                    borderRadius: 'var(--radius-sm)', display: 'inline-block',
+                  }}>
+                    🎁 获得道具：{(combat.result.rewards as any).itemDrop}
+                  </div>
+                )}
               </div>
             )}
             <button className="btn btn-primary" onClick={handleBack}>返回洞府</button>

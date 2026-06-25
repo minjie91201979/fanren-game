@@ -2,6 +2,20 @@ import React, { useState } from 'react';
 import { usePlayerStore } from '@/data';
 import { Rarity, RARITY_NAMES, ItemType, SpiritRoot } from '@/core';
 
+/** 发送浮动 Toast */
+const toast = (message: string, type: 'success' | 'error' = 'success') => {
+  window.dispatchEvent(new CustomEvent('notification', { detail: { message, type } }));
+};
+
+/** 属性名中文映射 */
+const ATTRIBUTE_NAMES: Record<string, string> = {
+  hp: '生命值', maxHp: '最大生命',
+  mp: '灵力值', maxMp: '最大灵力',
+  attack: '攻击力', defense: '防御力',
+  speed: '速度', spirit: '神识',
+  critRate: '暴击率', critDamage: '暴击倍率',
+};
+
 /** 物品id → 精灵图CSS类 */
 const ITEM_SPRITE: Record<string, string> = {
   pill_hp_small:   'sprite-item-cult sprite-item-hp-pill',
@@ -63,7 +77,6 @@ export const Inventory: React.FC = () => {
 
   const [selectedTab, setSelectedTab] = useState<'all' | 'equipment' | 'consumable' | 'material' | 'skill'>('all');
   const [detailItem, setDetailItem] = useState<{ item: any; quantity: number } | null>(null);
-  const [useResult, setUseResult] = useState<string | null>(null);
 
   const handleBack = () => {
     window.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'cave' } }));
@@ -72,8 +85,7 @@ export const Inventory: React.FC = () => {
   const handleUseItem = (itemId: string, itemName: string) => {
     const result = useItem(itemId);
     if (result) {
-      setUseResult(`【${itemName}】${result}`);
-      setTimeout(() => setUseResult(null), 2500);
+      toast(`【${itemName}】${result}`);
     }
   };
 
@@ -192,6 +204,30 @@ export const Inventory: React.FC = () => {
             </div>
           )}
 
+          {/* 功法属性加成 */}
+          {isSkill && (item as any).attributeBonus && (
+            <div style={{
+              background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)',
+              padding: 12, marginBottom: 12, fontSize: 13,
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 12, color: 'var(--text-tertiary)' }}>功法属性</div>
+              {Object.entries((item as any).attributeBonus).map(([k, v]) => (
+                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                  <span style={{ color: 'var(--text-tertiary)' }}>
+                    {ATTRIBUTE_NAMES[k] || k}
+                  </span>
+                  <span style={{ color: 'var(--brand-primary)', fontWeight: 500 }}>+{v}</span>
+                </div>
+              ))}
+              {(item as any).cultivationBonus > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, paddingTop: 4, borderTop: '1px solid var(--border-default)' }}>
+                  <span style={{ color: 'var(--text-tertiary)' }}>修炼速度</span>
+                  <span style={{ color: 'var(--color-green)', fontWeight: 500 }}>+{Math.round((item as any).cultivationBonus * 100)}%</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 操作按钮 */}
           <div style={{ display: 'flex', gap: 8 }}>
             {isEquip && (
@@ -219,7 +255,7 @@ export const Inventory: React.FC = () => {
                   });
                   removeItem(item.id, 1);
                   setDetailItem(null);
-                  alert(`成功学习《${item.name}》！`);
+                  toast(`成功学习《${item.name}》！`);
                 }}>
                 学习
               </button>
@@ -240,20 +276,6 @@ export const Inventory: React.FC = () => {
         <div className="panel-title" style={{ marginBottom: 0 }}>乾坤袋</div>
         <button className="btn btn-sm" onClick={handleBack}>← 返回</button>
       </div>
-
-      {/* 使用结果提示 */}
-      {useResult && (
-        <div style={{
-          position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--bg-surface)', border: '1px solid var(--brand-primary)',
-          borderRadius: 'var(--radius-md)', padding: '10px 20px',
-          fontSize: 14, color: 'var(--brand-primary)', zIndex: 1000,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-          animation: 'fadeIn 0.3s ease',
-        }}>
-          ✅ {useResult}
-        </div>
-      )}
 
       {/* 装备栏 */}
       <div className="panel" style={{ marginBottom: 16 }}>
@@ -384,13 +406,13 @@ export const Inventory: React.FC = () => {
                   <button className="btn btn-sm btn-primary"
                     onClick={() => {
                       const already = player.techniques.some((t: any) => t.id === slot.item.id);
-                      if (already) return alert('已学习该功法！');
+                      if (already) { toast('已学习该功法！', 'error'); return; }
                       usePlayerStore.setState((s) => {
                         if (!s.player) return;
                         s.player.techniques.push(slot.item);
                       });
                       removeItem(slot.item.id, 1);
-                      alert(`成功学习《${slot.item.name}》！`);
+                      toast(`成功学习《${slot.item.name}》！`);
                     }}>
                     学习
                   </button>

@@ -185,3 +185,106 @@ export function formatSaveTime(timestamp: number): string {
   const day = d.getDate().toString().padStart(2, '0');
   return `${year}/${month}/${day}`;
 }
+
+// ==================== 导出/导入 ====================
+
+/** 导出当前存档为 JSON 文件下载 */
+export function exportSave(): boolean {
+  try {
+    const player = usePlayerStore.getState().player;
+    const cave = useCaveStore.getState().cave;
+    if (!player) return false;
+
+    const saveData: SaveData = {
+      version: SAVE_VERSION,
+      timestamp: Date.now(),
+      player,
+      cave,
+      npcs: [],
+      quests: [],
+      settings: {
+        musicVolume: 0.7,
+        sfxVolume: 0.8,
+        textSpeed: 'NORMAL',
+        autoSave: true,
+        language: 'zh-CN',
+      },
+    };
+
+    const json = JSON.stringify(saveData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // 生成文件名：角色名_境界_时间戳
+    const realmShort = player.realm.replace(/_/g, '').slice(0, 4);
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const filename = `${player.name}_${realmShort}_${dateStr}.json`;
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    return true;
+  } catch (e) {
+    console.error('Export failed:', e);
+    return false;
+  }
+}
+
+/** 从 JSON 字符串导入存档并恢复到 store */
+export function importSave(jsonStr: string): { ok: boolean; error?: string; name?: string } {
+  try {
+    const data = JSON.parse(jsonStr);
+
+    // 校验必要字段
+    if (!data.player || !data.player.id || !data.player.name) {
+      return { ok: false, error: '存档数据不完整：缺少角色信息' };
+    }
+    if (!data.player.realm || !data.player.attributes) {
+      return { ok: false, error: '存档数据不完整：缺少属性或境界信息' };
+    }
+    if (data.version !== SAVE_VERSION) {
+      console.warn('Save version mismatch, but still importing');
+    }
+
+    const { setPlayer } = usePlayerStore.getState();
+    const { setCave } = useCaveStore.getState();
+
+    setPlayer(data.player);
+    if (data.cave) {
+      setCave(data.cave);
+    }
+
+    // 设置当前槽位（导入后自动保存到槽位1）
+    setCurrentSlot(1);
+    saveGame(1);
+
+    return {
+      ok: true,
+      name: `${data.player.name} (${data.player.realm})`,
+    };
+  } catch (e: any) {
+    console.error('Import failed:', e);
+    return { ok: false, error: `解析失败: ${e.message || '未知错误'}` };
+  }
+}
+
+/** 判断导入数据是否为合法存档 */
+export function validateImportData(jsonStr: string): { ok: boolean; name?: string; realm?: string; gold?: number } {
+  try {
+    const data = JSON.parse(jsonStr);
+    if (!data.player?.id || !data.player?.name) return { ok: false };
+    return {
+      ok: true,
+      name: data.player.name,
+      realm: data.player.realm,
+      gold: data.player.gold,
+    };
+  } catch {
+    return { ok: false };
+  }
+}

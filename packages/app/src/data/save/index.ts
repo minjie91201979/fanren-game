@@ -12,6 +12,9 @@ export {
   startAutoSave,
   stopAutoSave,
   formatSaveTime,
+  exportSave,
+  importSave,
+  validateImportData,
 } from './saveSystem';
 
 export type { SaveSlotInfo } from './saveSystem';

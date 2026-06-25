@@ -3,6 +3,11 @@ import { usePlayerStore } from '@/data';
 import { Realm, SkillType, REALM_NAMES as CORE_REALM_NAMES } from '@/core';
 import { SKILL_DB, getSkill, getSkillUpgradeCost, getSkillScaledEffectValue } from '@/data/skills';
 
+/** 发送浮动 Toast */
+const toast = (msg: string, type: 'success' | 'error' = 'success') => {
+  window.dispatchEvent(new CustomEvent('notification', { detail: { message: msg, type } }));
+};
+
 // ========== 辅助 ==========
 const SKILL_TYPE_NAMES: Record<string, string> = {
   ATTACK: '攻击',
@@ -33,29 +38,23 @@ export const SkillTree: React.FC = () => {
   const learnSkill = usePlayerStore((s) => s.learnSkill);
   const upgradeSkill = usePlayerStore((s) => s.upgradeSkill);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
-  const [message, setMessage] = useState('');
 
   if (!player) return null;
 
   const handleBack = () =>
     window.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'cave' } }));
 
-  const showMessage = (msg: string) => {
-    setMessage(msg);
-    setTimeout(() => setMessage(''), 2500);
-  };
-
   const handleLearn = (skillId: string) => {
     const skill = getSkill(skillId);
     if (!skill) return;
     if (player.gold < 50 && player.cultivation < 30) {
-      showMessage('灵石或修为不足！需要 50灵石 或 30修为');
+      toast('灵石或修为不足！需要 50灵石 和 30修为', 'error');
       return;
     }
     if (learnSkill(skillId)) {
-      showMessage(`学会【${skill.name}】！`);
+      toast(`学会【${skill.name}】！`);
     } else {
-      showMessage('学习失败，请检查条件');
+      toast('学习失败，请检查条件', 'error');
     }
   };
 
@@ -64,14 +63,14 @@ export const SkillTree: React.FC = () => {
     if (!learned) return;
     const cost = getSkillUpgradeCost(learned.level);
     if (player.gold < cost.gold || player.cultivation < cost.cultivation) {
-      showMessage(`资源不足！需要 ${cost.gold}灵石 + ${cost.cultivation}修为`);
+      toast(`资源不足！需要 ${cost.gold}灵石 + ${cost.cultivation}修为`, 'error');
       return;
     }
     const result = upgradeSkill(skillId);
     if (result.success) {
-      showMessage(`【${getSkill(skillId)?.name}】升至 ${learned.level + 1} 级！`);
+      toast(`【${getSkill(skillId)?.name}】升至 ${learned.level + 1} 级！`);
     } else {
-      showMessage('升级失败');
+      toast('升级失败', 'error');
     }
   };
 
@@ -106,17 +105,6 @@ export const SkillTree: React.FC = () => {
         </div>
         <button className="btn btn-sm" onClick={handleBack}>← 返回</button>
       </div>
-
-      {/* 消息提示 */}
-      {message && (
-        <div className="fade-in" style={{
-          textAlign: 'center', padding: '8px 16px', marginBottom: 12,
-          background: 'var(--brand-primary)', color: '#fff',
-          borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 500,
-        }}>
-          {message}
-        </div>
-      )}
 
       {/* 技能详情弹窗 */}
       {selectedSkill && (() => {

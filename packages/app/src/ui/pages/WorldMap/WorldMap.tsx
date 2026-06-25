@@ -7,6 +7,7 @@ import {
   MapLocation, LocationAction,
 } from '@/data/mapData';
 import { getSkill } from '@/data/skills';
+import { getMonster } from '@/data/monsters';
 
 // ========== SVG 地形元素 ==========
 const MOUNTAIN_PATHS = [
@@ -81,14 +82,9 @@ export const WorldMap: React.FC = () => {
   const startCombatAt = (loc: MapLocation, enemyType: string) => {
     if (!player) return;
 
-    const enemyData: Record<string, { name: string; attrs: any }> = {
-      wolf:  { name: '银鬃狼', attrs: { hp:200,maxHp:200,mp:0,maxMp:0,attack:20,defense:10,speed:12,spirit:3,critRate:0.05,critDamage:1.5 } },
-      ghost: { name: '幽灵鬼灵', attrs: { hp:150,maxHp:150,mp:40,maxMp:40,attack:15,defense:5,speed:18,spirit:5,critRate:0.1,critDamage:1.8 } },
-      golem: { name: '石傀儡', attrs: { hp:350,maxHp:350,mp:0,maxMp:0,attack:25,defense:20,speed:6,spirit:2,critRate:0.02,critDamage:1.3 } },
-      serpent: { name: '水蛇妖', attrs: { hp:180,maxHp:180,mp:30,maxMp:30,attack:18,defense:8,speed:15,spirit:4,critRate:0.08,critDamage:1.6 } },
-    };
+    const m = getMonster(enemyType);
+    if (!m) return;
 
-    const data = enemyData[enemyType] || enemyData.wolf;
     const effAttrs = getEffectiveAttributes();
     const allLearnedSkills = player.skills
       .map((ls) => { const s = getSkill(ls.skillId); return s ? { ...s, level: ls.level } : null; })
@@ -103,10 +99,10 @@ export const WorldMap: React.FC = () => {
         sprite: 'player_male', realm: player.realm,
       },
       {
-        id: `enemy_${enemyType}_${Date.now()}`, name: data.name, isPlayer: false,
-        attributes: { ...data.attrs }, currentAttributes: { ...data.attrs },
+        id: `enemy_${enemyType}_${Date.now()}`, name: m.name, isPlayer: false,
+        attributes: { ...m.attributes }, currentAttributes: { ...m.attributes },
         buffs: [], skills: [],
-        sprite: `sprite-enemy-${enemyType}`, realm: player.realm,
+        sprite: m.sprite, realm: player.realm,
       },
     );
 

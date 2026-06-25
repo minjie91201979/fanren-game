@@ -4,6 +4,11 @@ import { getItem, SHOP_CATALOG } from '@/data/items';
 import { ItemType } from '@/core';
 import { formatGold } from '@/core';
 
+/** 发送浮动 Toast */
+const toast = (message: string, type: 'success' | 'error' = 'success') => {
+  window.dispatchEvent(new CustomEvent('notification', { detail: { message, type } }));
+};
+
 const CATEGORY_NAMES: Record<string, string> = {
   '丹药': '丹药', '武器': '武器', '防具': '防具', '符箓': '符箓', '材料': '材料', '功法': '功法',
 };
@@ -15,7 +20,6 @@ export const Trading: React.FC = () => {
   const player = usePlayerStore((s) => s.player);
   const addItem = usePlayerStore((s) => s.addItem);
   const modifyGold = usePlayerStore((s) => s.modifyGold);
-  const [notification, setNotification] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('全部');
 
   const categories = ['全部', ...new Set(SHOP_CATALOG.map(i => i.category))];
@@ -24,22 +28,18 @@ export const Trading: React.FC = () => {
     const item = getItem(itemId);
     if (!player || !item) return;
     if (player.gold < item.price) {
-      setNotification('灵石不足！');
-      setTimeout(() => setNotification(''), 2000);
+      toast('灵石不足！', 'error');
       return;
     }
     modifyGold(-item.price);
     addItem({ ...item }, 1);
-    setNotification(`购买了 ${item.name}！`);
-    setTimeout(() => setNotification(''), 2000);
+    toast(`购买了 ${item.name}！`, 'success');
   };
 
   const handleSell = (itemId: string) => {
     const item = getItem(itemId);
     if (!player || !item) return;
-    // In a real implementation, find the item in player's inventory and remove it
-    setNotification(`出售了 ${item.name}，获得 ${Math.floor(item.price * 0.5)} 灵石`);
-    setTimeout(() => setNotification(''), 2000);
+    toast(`出售了 ${item.name}，获得 ${Math.floor(item.price * 0.5)} 灵石`);
   };
 
   return (
@@ -59,17 +59,6 @@ export const Trading: React.FC = () => {
           💰 {player?.gold || 0}
         </div>
       </div>
-
-      {/* 通知 */}
-      {notification && (
-        <div className="fade-in" style={{
-          textAlign: 'center', padding: '8px 16px', marginBottom: 12,
-          background: notification.includes('不足') ? 'var(--brand-danger)' : 'var(--color-green)',
-          color: '#fff', borderRadius: 'var(--radius-md)', fontSize: 14,
-        }}>
-          {notification}
-        </div>
-      )}
 
       {/* 分类筛选 */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>

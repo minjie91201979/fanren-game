@@ -3,6 +3,8 @@ import { immer } from 'zustand/middleware/immer';
 import { CombatUnit, Buff, CombatAction, Attributes, SkillEffect } from '@/core';
 import { calculateDamage, generateId } from '@/core';
 import { usePlayerStore } from './playerStore';
+import { calcKillReward } from '@/data/monsters';
+import { getItem } from '@/data/items';
 
 interface SkillCooldown {
   skillId: string;
@@ -26,11 +28,36 @@ interface CombatState {
   isOnCooldown: (skillId: string) => boolean;
 }
 
-// 胜利时发放奖励到 playerStore
-function grantRewards(gold: number, cultivation: number) {
+/**
+ * 从敌人 ID 中提取怪物类型
+ * ID 格式: "enemy_wolf" 或 "enemy_wolf_1680000000000"
+ */
+function extractEnemyType(enemyId: string): string {
+  const parts = enemyId.split('_');
+  return parts[1] || 'wolf';
+}
+
+/**
+ * 胜利时发放奖励到 playerStore
+ * 根据怪物类型计算差异化奖励，并处理随机道具掉落
+ */
+function grantRewards(enemyId: string, isSkillKill: boolean) {
+  const monsterType = extractEnemyType(enemyId);
+  const reward = calcKillReward(monsterType, isSkillKill);
+
   const ps = usePlayerStore.getState();
-  ps.modifyGold(gold);
-  ps.addCultivation(cultivation);
+  ps.modifyGold(reward.gold);
+  ps.addCultivation(reward.cultivation);
+
+  // 道具掉落
+  if (reward.itemDrop) {
+    const item = getItem(reward.itemDrop);
+    if (item) {
+      ps.addItem(item, 1);
+    }
+  }
+
+  return reward;
 }
 
 export const useCombatStore = create<CombatState>()(
@@ -105,9 +132,9 @@ export const useCombatStore = create<CombatState>()(
           if (s.enemy.currentAttributes.hp <= 0) {
             s.enemy.currentAttributes.hp = 0;
             s.isActive = false;
-            s.result = { victory: true, rewards: { gold: 80, cultivation: 50 } };
+            const reward = grantRewards(s.enemy.id, true);
+            s.result = { victory: true, rewards: reward };
             s.log.push(`🎉 击败了 ${s.enemy.name}！`);
-            grantRewards(80, 50);
             return;
           }
 
@@ -155,9 +182,9 @@ export const useCombatStore = create<CombatState>()(
         if (s.enemy.currentAttributes.hp <= 0) {
           s.enemy.currentAttributes.hp = 0;
           s.isActive = false;
-          s.result = { victory: true, rewards: { gold: 50, cultivation: 30 } };
+          const reward = grantRewards(s.enemy.id, false);
+          s.result = { victory: true, rewards: reward };
           s.log.push(`🎉 击败了 ${s.enemy.name}！`);
-          grantRewards(50, 30);
           return;
         }
 
