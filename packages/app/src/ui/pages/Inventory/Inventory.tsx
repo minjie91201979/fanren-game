@@ -74,6 +74,7 @@ export const Inventory: React.FC = () => {
   const unequipItem = usePlayerStore((s) => s.unequipItem);
   const useItem     = usePlayerStore((s) => s.useItem);
   const removeItem  = usePlayerStore((s) => s.removeItem);
+  const modifyGold  = usePlayerStore((s) => s.modifyGold);
 
   const [selectedTab, setSelectedTab] = useState<'all' | 'equipment' | 'consumable' | 'material' | 'skill'>('all');
   const [detailItem, setDetailItem] = useState<{ item: any; quantity: number } | null>(null);
@@ -87,6 +88,19 @@ export const Inventory: React.FC = () => {
     if (result) {
       toast(`【${itemName}】${result}`);
     }
+  };
+
+  /** 出售物品：移除物品 + 获得半价灵石 */
+  const handleSell = (item: any, quantity: number = 1) => {
+    const sellPrice = Math.floor((item.price || 0) * 0.5);
+    if (sellPrice <= 0) {
+      toast('该物品无法出售', 'error');
+      return;
+    }
+    removeItem(item.id, 1);
+    modifyGold(sellPrice);
+    setDetailItem(null);
+    toast(`出售了 ${item.name}，获得 ${sellPrice} 灵石`);
   };
 
   if (!player) return null;
@@ -260,6 +274,10 @@ export const Inventory: React.FC = () => {
                 学习
               </button>
             )}
+            <button className="btn btn-sm" style={{ flex: 1, background: 'var(--color-red)', color: '#fff' }}
+              onClick={() => handleSell(item, quantity)}>
+              💰 出售 ({Math.floor((item.price || 0) * 0.5)}灵)
+            </button>
             <button className="btn btn-sm" style={{ flex: 1 }}
               onClick={() => setDetailItem(null)}>
               关闭
@@ -420,6 +438,11 @@ export const Inventory: React.FC = () => {
                 <button className="btn btn-sm"
                   onClick={() => setDetailItem(slot)}>
                   详情
+                </button>
+                <button className="btn btn-sm"
+                  style={{ color: 'var(--color-red)' }}
+                  onClick={() => handleSell(slot.item, slot.quantity)}>
+                  💰
                 </button>
               </div>
             </div>
